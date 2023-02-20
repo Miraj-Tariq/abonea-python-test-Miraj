@@ -1,6 +1,7 @@
 import logging
 import os
 
+
 if not os.getenv('GAE_APPLICATION'):
     # if we are running locally, activate stubs for local
     import backend.stub.logging  # noqa F401
@@ -11,6 +12,8 @@ from google.cloud import ndb
 
 from backend.api import application as api_application
 from backend.gunicorn.log_handler import LogHandler
+from backend.movies_base_setup import OMDBMoviesBaseSetup
+from backend import movie
 
 ndb_client = ndb.Client()
 
@@ -18,6 +21,10 @@ log_handler = LogHandler()
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(log_handler)
+
+with ndb_client.context():
+    if movie.Movie.count() == 0:
+        OMDBMoviesBaseSetup()
 
 
 def application(environ, start_response):
